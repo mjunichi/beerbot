@@ -13,6 +13,7 @@ class RespondType(Enum):
     rain = 'rain'
     image = 'img'
     train = 'train'
+    translate = 'translate'
 
     def toHelp(self):
         if self == RespondType.beer:
@@ -23,6 +24,8 @@ class RespondType(Enum):
             return self.value + ' 東京'
         elif self == RespondType.image:
             return self.value + ' hub organic ipa'
+        elif self == RespondType.translate:
+            return self.value + ' 日本語でおｋ'
 
 
 @respond_to(r'.+')
@@ -31,6 +34,7 @@ def mention(message):
     from libs import rain
     from libs import image
     from libs import train
+    from libs import translate
 
     query = ''
     commands = message.body['text'].split(' ')
@@ -49,6 +53,8 @@ def mention(message):
         rain.mention(message, query)
     elif command == RespondType.image.value:
         image.mention(message, query)
+    elif command == RespondType.translate.value:
+        translate.mention(message, query)
     else:
         help = '>>> usage\n'
         for res in RespondType:
