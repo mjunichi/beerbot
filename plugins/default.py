@@ -10,9 +10,9 @@ def mention(message):
 
 class RespondType(Enum):
     beer = 'beer'
-    rain = '雨'
+    rain = 'rain'
     image = 'img'
-    train = '遅延'
+    train = 'train'
 
     def toHelp(self):
         if self == RespondType.beer:
@@ -20,7 +20,7 @@ class RespondType(Enum):
         elif self == RespondType.train:
             return self.value
         elif self == RespondType.rain:
-            return self.value
+            return self.value + ' 東京'
         elif self == RespondType.image:
             return self.value + ' hub organic ipa'
 
@@ -50,8 +50,8 @@ def mention(message):
     elif command == RespondType.image.value:
         image.mention(message, query)
     else:
-        help = 'available command is\n'
+        help = '>>> usage\n'
         for res in RespondType:
-            help += res.toHelp() + '\n'
+            help += res.value + ': [' + res.toHelp() + ']\n'
 
         message.send(help)
