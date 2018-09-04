@@ -1,6 +1,8 @@
 from slackbot.bot import listen_to      # チャネル内発言で反応するデコーダ
 from slackbot.bot import respond_to     # @botname: で反応するデコーダ
 from enum import Enum
+from logging import getLogger, StreamHandler, DEBUG
+logger = getLogger('beerbot')
 
 
 @listen_to('beer')
@@ -14,6 +16,7 @@ class RespondType(Enum):
     image = 'img'
     train = 'train'
     translate = 'translate'
+    help = 'help'
 
     def toHelp(self):
         if self == RespondType.beer:
@@ -26,6 +29,8 @@ class RespondType(Enum):
             return self.value + ' hub organic ipa'
         elif self == RespondType.translate:
             return self.value + ' 日本語でおｋ'
+        elif self == RespondType.help:
+            return self.value
 
 
 @respond_to(r'.+')
@@ -35,10 +40,11 @@ def mention(message):
     from libs import image
     from libs import train
     from libs import translate
+    from libs import ai
 
     query = ''
     commands = message.body['text'].split(' ')
-    print(commands)
+    logger.debug(commands)
     command = commands[0]
     if len(commands) > 1:
         query = ','.join(commands[1:])
@@ -55,9 +61,11 @@ def mention(message):
         image.mention(message, query)
     elif command == RespondType.translate.value:
         translate.mention(message, query)
-    else:
+    elif command == RespondType.help.value:
         help = '>>> usage\n'
         for res in RespondType:
             help += res.value + ': [' + res.toHelp() + ']\n'
 
         message.send(help)
+    else:
+        ai.mention(message, query)
