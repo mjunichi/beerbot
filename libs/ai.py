@@ -4,10 +4,11 @@
 import slackbot_settings
 import json
 import requests
+import random
 from _datetime import datetime
 from logging import getLogger, StreamHandler, DEBUG
 logger = getLogger('beerbot')
-appIds = {}
+settings = {}
 
 
 def register():
@@ -28,8 +29,12 @@ def register():
 
 def mention(message, query):
     username = message.user['name']
-    if username not in appIds.keys():
-        appIds[username] = register()
+    if username not in settings.keys():
+        setting = {}
+        setting['appId'] = register()
+        setting['appRecvTime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        setting['t'] = random.choice(['', 'kansai', 'akachan'])
+        settings[username] = setting
 
     endpoint = 'https://api.apigw.smt.docomo.ne.jp/naturalChatting/v1/dialogue?APIKEY=REGISTER_KEY'
     url = endpoint.replace(
@@ -39,15 +44,15 @@ def mention(message, query):
     payload = {
         "language": "ja-JP",
         "botId": "Chatting",
-        "appId": appIds[username],
+        "appId": settings[username]['appId'],
         "voiceText": message.body['text'],
-        "appRecvTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "appRecvTime": settings[username]['appRecvTime'],
         "appSendTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "clientData": {
             "option": {
                 "nickname": username,
-                "mode": 'srtr',  # dialog or srtr
-                "t": ''  # kansai or akachan
+                "mode": 'dialog',  # dialog or srtr
+                "t": settings[username]['t']  # kansai or akachan
             }
         }
     }
@@ -58,9 +63,8 @@ def mention(message, query):
                       data=json.dumps(payload), headers=headers)
     data = r.json()
 
-    # rec_time = data['serverSendTime']
     response = data['systemText']['expression']
 
-    logger.debug('{user}: {message} > {response}'.format(
+    logger.debug('[{user}]: {message}  [beer]: {response}'.format(
         user=username, message=message.body['text'], response=response))
     message.reply(response)
